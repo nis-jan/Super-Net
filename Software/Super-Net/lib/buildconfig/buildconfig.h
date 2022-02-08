@@ -8,7 +8,7 @@
 
 
 /**uncomment/comment to use/not use the node with the python desktop app*/
-//#define DESKTOP 1
+#define DESKTOP 1
 
 /**uncomment/comment to use/not use the node with the mobile app for android*/
-#define MOBILE 1 
+//#define MOBILE 1 
