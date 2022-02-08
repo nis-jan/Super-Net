@@ -10,7 +10,6 @@
 //entspricht IRQ
 #define LoRa_DIO0 26
 
-bool sendmsg = false;
 
 
 /// <summary>
