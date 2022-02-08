@@ -1,6 +1,6 @@
 # SUPER-NET
 
-Ziel des Projekts ist es ein ESP32 mit LoRa Modul(nachfolgend "Node") so zu programmieren,
+Ziel des Projekts ist es ein ESP32 mit LoRa Modul(nachfolgend "**Node**") so zu programmieren,
 dass dieser sich über eine serielle USB-Schnittstellemit einem Endgerät verbinden lässt
 um damit anderen Engeräten über die Funkverbindung via LoRa Nachrichten zukommen zu lassen.
 
@@ -18,9 +18,12 @@ der Übertragung von Nachrichten.
  
 
 # Repo-Aufbau
+
+Die Dokumentation zu diesem Projekt wurde mit **Doxygen** erstellt und befindet sich in: Documentation/html/
+
 Diese Repo enthält drei Applikationen:
 
-- Die Software in C++ für die "Nodes"
+- Die Software in C++ für die "**Nodes**"
 - Eine Desktop-Anwendung in Python um dem "Node" befehle zu übermitteln und Nachrichten zu empfangen
 - Eine Android-App um das gleiche in schick auf dem Handy machen zu können
 
@@ -39,4 +42,4 @@ Es handelt sich um ein PlatformIO-Projekt, welches konfiguriert ist für die bei
 - Heltec Wireless Stick
 
 in der platformio.ini, lassen sich aber weitere Gerätekonfiguration hinzufügen.
-Das Projekt lässt sich nur in PlatformIO erstellen!
+Das Projekt lässt sich nur in mit PlatformIO, einer Erweiterung für VSCode erstellen!
