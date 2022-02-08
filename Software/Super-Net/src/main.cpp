@@ -19,26 +19,7 @@ void Button_ISR(){
   digitalWrite(25, !digitalRead(25));
 }
 
-/*
-void msg_callback(char * str, int size, int rssi, int sender){
-  Log::Instance()->Log_msg("Callback opened");
-  String msg = "";
-  for(int i = 0 ; i < size; i++){
-    msg += str[i];
-  }
-  Log::Instance()->Log_msg("Got MSG:\n\t" + msg + "\nRSSI:\n   " + String(rssi));
-  Log::Instance()->Log_msg(msg);
-}
 
-void error_Callback(int packref, String err){
-  Log::Instance()->Log_msg("error callback opened");
-  Log::Instance()->Log_msg("Fehler bei Paket mit Referens" + String(packref) + ":\n" + err);
-}
-
-void success_callback(int packref){
-  Log::Instance()->Log_msg("Paket " + String(packref) + "\nerfolgreich gesendet!");
-}
-*/
 unsigned long last = 0;
 void setup() {
   pinMode(0, INPUT);
@@ -53,12 +34,8 @@ void setup() {
   }
   SerialHandler::init();
   last = millis();
-  //Log::Instance()->Log_msg("LoRa initialized");
-  /*
-  sendrcv::Msg_Callback = msg_callback;
-  sendrcv::Send_Error = error_Callback;
-  sendrcv::On_Send_Success = success_callback;
-  */
+  Log::Instance()->Log_msg("LoRa initialized");
+  
 }
 
 /*

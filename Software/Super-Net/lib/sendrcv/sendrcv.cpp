@@ -11,6 +11,7 @@
 
 
 int sendrcv::send_msg(char* msg, int msgsize, int recipient, int packref){
+	//create msg packet based on the given parameters and send it:
 	if (packref == 0)packref = Packet::create_reference();
 	Packet * p = new Packet();
 	vector<int> route = {userdata::Instance()->MYADRESS(), recipient};
@@ -26,10 +27,13 @@ int sendrcv::send_msg(char* msg, int msgsize, int recipient, int packref){
 void sendrcv::rcv_packet(int packetsize){
 	Packet *p = new Packet();
 	p->raw_data = (char*)malloc(packetsize);
+	// receive packet
 	for(int i = 0; i < packetsize; i++){
 		if(!LoRa.available())throw "transmission incomplete";
 		p->raw_data[i] = LoRa.read();
 	}
+	// parse packetinformation:
+
 	int recipient = bytes::bytes2int(p->raw_data, 0);
 	
 	// cope only with packets that are destined for us
@@ -130,7 +134,7 @@ void sendrcv::fetch_data_from_whohas(Packet* p, int& max_hops, int& wanted) {
 	wanted = bytes::bytes2int(p->raw_data, 3*sizeof(int)+1);
 }
 
-// this function kills the running daemon and deletes all the entries about it.
+
 void sendrcv::kill_current_daemon(int reference, void* packetpointer){
 	Log::Instance()->Log_msg("[-]: Daemon with ref " + String(reference) + "will be killed");
 	Packet * pp = (Packet*)packetpointer;
@@ -142,9 +146,6 @@ void sendrcv::kill_current_daemon(int reference, void* packetpointer){
 }
 
 
-// hier kann man noch sicher stellen, dass keine memory leaks auftreten, wenn der daemon beendet wird
-// und der entsprechende daemon muss noch gekillt werden, wenn das zugehörige ack
-// gefangen wird
 void sendrcv::forwarddaemon(void * params){
 	int reference = bytes::bytes2int(((Packet*)params)->raw_data, sizeof(int));
 	Log::Instance()->Log_msg("[+] forwarddaemon gestartet für Paket mit Referenz " + String(reference));
@@ -188,7 +189,7 @@ void sendrcv::forwarddaemon(void * params){
 		kill_current_daemon(reference, params);
 	// provide error message, incase no ihaves have arrived and therefore no possible routes have been found
 	if(possible_routes.find(reference) == possible_routes.end()){
-		Send_Error(reference, "Ziel nicht erreichbar!");
+		On_Send_Error(reference, "Ziel nicht erreichbar!");
 		kill_current_daemon(reference, params);
 	}
 	//create new msg packet with the most reliable route
@@ -227,13 +228,11 @@ void sendrcv::forwarddaemon(void * params){
 	if (ack_received_flag[reference])
 		kill_current_daemon(reference, params);
 
-	Send_Error(reference, "Ziel nicht erreichbar!");
+	On_Send_Error(reference, "Ziel nicht erreichbar!");
 	kill_current_daemon(reference, params);
 }
 
 void sendrcv::find_best_route(int reference, vector<int> * &route){
-	//sicherer machen, nur wenn auch routen vorhanden sind prüfen...
-	//und auch noch schauen, wo der fehler beim schreiben und fetchen des ihavepakets ist!
 	#ifdef SENDRCV_DEBUG
 	Log::Instance()->Log_msg("trying to find best route");
 	#endif
@@ -245,8 +244,8 @@ void sendrcv::find_best_route(int reference, vector<int> * &route){
 	route = choice->create_route();
 }
 
-void(*sendrcv::Msg_Callback)(char* msg, int msg_size, int rssi, int sender);
-void(*sendrcv::Send_Error)(int packref, String error_msg);
+void(*sendrcv::On_MSG_Receive)(char* msg, int msg_size, int rssi, int sender);
+void(*sendrcv::On_Send_Error)(int packref, String error_msg);
 void(*sendrcv::On_Send_Success)(int packref);
 id_list* sendrcv::current_ids;
 std::map<int, vector<ihave_grid>> sendrcv::possible_routes;
@@ -266,7 +265,7 @@ void sendrcv::interpretpacket(Packet* p, int rssi)
 		if (current_ids == NULL)current_ids = new id_list(100);
 		int wanted;
 		fetch_data_from_whohas(p, max_hops, wanted);
-		if (wanted == userdata::Instance()->MYADRESS()) {
+		if (wanted == userdata::Instance()->MYADRESS()) {	//if we are the wanted client, we send an ihave packet with our id and rssi of 0
 			outgoing = new Packet();
 			ihave_grid ig;
 			ig.add_hop(hop(userdata::Instance()->MYADRESS(), 0));
@@ -275,7 +274,7 @@ void sendrcv::interpretpacket(Packet* p, int rssi)
 			delete outgoing;
 		}
 		else {
-			// reproduce the whohas packet only if we are not the ones waiting for the corresponding "ihaves"
+			// reproduce the whohas packet only if we are not the ones waiting for the corresponding "ihaves" and it hasn't already passed us
 			if (forwarding_tasks.find(p->reference) == forwarding_tasks.end() &&!current_ids->contains(p->reference))
 			{
 				current_ids->push(p->reference);
@@ -323,17 +322,18 @@ void sendrcv::interpretpacket(Packet* p, int rssi)
 		break;
 
 	case Packet::packettype::msg:
-		outgoing = new Packet();
+		
 		route = new vector<int>();
 		char* msg;
 		int msg_size;
 		int dest;
 		fetch_data_from_msg(p, route, msg, msg_size, dest);	//extract data from packet
-		Msg_Callback(msg, msg_size, rssi, (*route)[0]);
-		Packet::create_ACK(outgoing, route, p->reference);	//create ack packet
+		On_MSG_Receive(msg, msg_size, rssi, (*route)[0]);
+		outgoing = new Packet();							//create ack packet
+		Packet::create_ACK(outgoing, route, p->reference);	
 		Log::Instance()->Log_msg("[INTERPRETER]: MSG successfull interpreted");
 		delay(1000);
-		sendpacket(outgoing);	//send ack
+		sendpacket(outgoing);								//send ack
 		Log::Instance()->Log_msg("[Interpreter]: Ack sent");
 		
 		delete outgoing;

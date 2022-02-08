@@ -7,15 +7,15 @@
 #ifdef DESKTOP
 std::map<Serialtype, char> SerialHandler::_type2byte = {{SENDMSG, 1}, {RCVMSG, 2}, {SENDSUCCESS, 3}, {SENDERROR, 4}, {SETADDR, 5}};
 std::map<char, Serialtype> SerialHandler::_byte2type = {{1, SENDMSG}, {2, RCVMSG}, {3, SENDSUCCESS}, {4, SENDERROR}, {5, SETADDR}};
-const char* SerialHandler::magicpattern = "SuperNetSerial";
-int SerialHandler::patternlength = 14;
+const char* SerialHandler::_magicpattern = "SuperNetSerial";
+int SerialHandler::_patternlength = 14;
 #endif
 
 
 void SerialHandler::init(){
-    sendrcv::Msg_Callback = msg_Callback;
+    sendrcv::On_MSG_Receive = msg_Callback;
     sendrcv::On_Send_Success = success_Callback;
-    sendrcv::Send_Error = error_Callback;
+    sendrcv::On_Send_Error = error_Callback;
     display::instance()->update();
 }
 
@@ -131,10 +131,10 @@ int SerialHandler::get_byte(){
 
 bool SerialHandler::check_4_magicpattern(){
     int current;
-    for(int i = 0; i < patternlength;i++){
+    for(int i = 0; i < _patternlength;i++){
         current = get_byte();
-        //Serial.println(String((char)current) + " = " + magicpattern[i]);
-        if(current != magicpattern[i]) return false;
+        //Serial.println(String((char)current) + " = " + _magicpattern[i]);
+        if(current != _magicpattern[i]) return false;
     }
     return true;
 }
@@ -161,7 +161,7 @@ void SerialHandler::send_int(int i){
 }
 
 void SerialHandler::send_magicpattern(){
-    send_bytes((char*)magicpattern, patternlength);
+    send_bytes((char*)_magicpattern, _patternlength);
 }
 
 void SerialHandler::send_bytes(char* bytes, int count){

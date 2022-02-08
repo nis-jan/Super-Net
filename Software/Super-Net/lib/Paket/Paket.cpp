@@ -103,7 +103,6 @@ void bytes::bytecopy(char* src, char* dest, int startsrc, int startdest, int cou
 
 
 //packet:
-//static stuff:
 std::map<Packet::packettype, char> Packet::type2byte = { {packettype::whohas, 0x0},{packettype::ihave, 0x1},{packettype::msg, 0x2},{packettype::ACK, 0x3}, {packettype::forward, 0x4 } };
 std::map<char, Packet::packettype> Packet::byte2type = { {0x0, packettype::whohas},{0x1, packettype::ihave},{0x2, packettype::msg},{0x3, packettype::ACK}, {0x4, packettype::forward} };
 
@@ -114,30 +113,23 @@ int Packet::create_reference() {
 	return r;
 }
 
-/// <summary>
-/// initializes an empty packet.
-/// </summary>
+
 Packet::Packet() {
 	this->packetsize = 0;
-	this->payloadsize = 0;
 }
 
 Packet::~Packet() {
+	//free memory
 	if(this->raw_data != NULL){
 		free(this->raw_data);
 		this->raw_data = NULL;
 	}
 }
 
-/// <summary>
-/// fills a packet with data to create a whohaspacket
-/// </summary>
-/// <param name="p">the packet that is supposed to be filled</param>
-/// <param name="reference">the reference id for this packet</param>
-/// <param name="senderid">the id of the sender of this packet</param>
-/// <param name="wanted_client">the id of the wanted client</param>
+
 void Packet::create_whohas(Packet* p, int reference, int max_hops, int wanted_client)
 {
+	// set attribute fields of packet
 	p->packetsize = (4 * sizeof(int) + 1);
 	p->raw_data = (char*)malloc(p->packetsize);
 	p->type = Packet::packettype::whohas;
@@ -166,19 +158,14 @@ void Packet::create_whohas(Packet* p, int reference, int max_hops, int wanted_cl
 	return;
 }
 
-/// <summary>
-///	fills a packet with data to create an ihave packet
-/// </summary>
-/// <param name="p">the packet which is supposed to be filled</param>
-/// <param name="recipient">the address of the recipient</param>
-/// <param name="reference">the reference id for this packet</param>
-/// <param name="ihavegrid">the ihavegrid containing the network route</param>
+
 void Packet::create_ihave(Packet* p, int max_hops, int reference, ihave_grid * ihavegrid)
 {
 	#ifdef PACKETDEBUG
 	Log::Instance()->Log_msg("create ihave ihavestruct:");
 	ihavegrid->print();
 	#endif
+	// set attribute fields of packet
 	p->packetsize = 4 * sizeof(int) + 1 + ihavegrid->bytecount();
 	p->raw_data = (char*)malloc(p->packetsize);
 	p->reference = reference;
@@ -211,22 +198,16 @@ void Packet::create_ihave(Packet* p, int max_hops, int reference, ihave_grid * i
 	return;
 }
 
-/// <summary>
-/// fills a packet with data to create an msgpacket
-/// </summary>
-/// <param name="p">the packet thats supposed to be filled</param>
-/// <param name="recipient">the recipients id</param>
-/// <param name="reference">the referenceid for this packet</param>
-/// <param name="route">the route the packets supposed to take containing the original sender and recipient ids</param>
-/// <param name="msgsize">the amount of bytes of the message</param>
-/// <param name="msg">pointer to the messagedata</param>
+
 void Packet::create_msg(Packet* p, int recipient, int reference, vector<int> route, int msgsize, char* msg)
 {
+	// set attribute fields of packet
 	p->type = Packet::packettype::msg;
 	p->reference = reference;
 	p->packetsize = 4 * sizeof(int) + 1 + route.size() * sizeof(int) + msgsize;
 	p->raw_data = (char*)malloc(p->packetsize);
 
+	// filling in the raw data structured like defined in Paket.h
 	char* intptr;
 	intptr = bytes::int2bytes(recipient);
 	bytes::bytecopy(intptr, p->raw_data, 0, 0, sizeof(int)); //recipient
@@ -263,14 +244,11 @@ void Packet::create_msg(Packet* p, int recipient, int reference, vector<int> rou
 	return;
 }
 
-/// <summary>
-/// creates an ACK packet that can be sent as an answer to a message using the route the packet took
-/// </summary>
-/// <param name="p">the packet whose data should be filled</param>
-/// <param name="orig_route">the route the original msg packet took</param>
-/// <param name="reference">the reference id of the corresponding msg packet</param>
+
 void Packet::create_ACK(Packet* p, vector<int> *orig_route, int reference)
 {
+	// reverse route, since we want to send the ACK back to the sender of the msg packet
+	// along the same route it came, but in the opposite direction
 	p->type = Packet::packettype::ACK;
 	p->reference = reference;
 	vector<int> reversed_route;
@@ -278,6 +256,7 @@ void Packet::create_ACK(Packet* p, vector<int> *orig_route, int reference)
 		reversed_route.push_back((*orig_route)[i]);
 	}
 
+	//generate ack
 	p->packetsize = 2 * sizeof(int) + 1;
 	p->raw_data = (char*)malloc(p->packetsize);
 	
@@ -290,7 +269,7 @@ void Packet::create_ACK(Packet* p, vector<int> *orig_route, int reference)
 	free(intptr);
 	p->raw_data[2 * sizeof(int)] = Packet::type2byte[Packet::packettype::ACK];
 
-	p->routepacket(reversed_route);
+	p->routepacket(reversed_route);	//route the packet
 
 	return;
 
@@ -305,7 +284,7 @@ void Packet::routepacket(vector<int> route) {
 
 	int curr_ind = 0; //the index where currently is written in the raw data of the packet
 
-	//stacking forward-route:
+	// stacking this packet in several forwarding packets so it can be sent along its route
 	char* intptr;
 	for (int i = 1; i < route.size() - 1; i++) { //starts at one since the sender adress is included.
 		intptr = bytes::int2bytes(route[i]);
@@ -343,16 +322,8 @@ void Packet::routepacket(vector<int> route) {
 	this->type = packettype::forward;
 }
 
-void Packet::reallocate() {
-	free(raw_data);
-	//free(this->raw_data);
-	delete this;
-}
 
 
-/// <summary>
-/// prints the contents of a packet bytewise
-/// </summary>
 void Packet::print() {
 	Log::Instance()->Log_msg("Type: " + String((int)type) + "\nReference: " + String(reference) + "\nPacketsize: " + String(this->packetsize) + "Bytes");
 	for (int i = 0; i < this->packetsize; i++) {
@@ -360,12 +331,4 @@ void Packet::print() {
 	}
 	Log::Instance()->Log_msg("");
 	return;
-}
-
-//prints a bytearray
-void Packet::printla(char* bytes, int count) {
-	for (int i = 0; i < count; i++) {
-		cout << (int)bytes[i] << " | ";
-	}
-	cout << endl;
 }
