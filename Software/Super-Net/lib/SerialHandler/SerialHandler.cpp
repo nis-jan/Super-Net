@@ -1,6 +1,7 @@
 #include "SerialHandler.h"
 #include <sendrcv.h>
 #include <Display.h>
+#include <Log.h>
 
 
 
@@ -21,11 +22,13 @@ void SerialHandler::init(){
 
 
 void SerialHandler::msg_Callback(char * str, int size, int rssi, int sender){
+    
     #ifdef MOBILE
     String msg = "";
     for(int i = 0; i < size; i++){
         msg += str[i];
     }
+    Log::Instance()->Log_msg("[MSG CALLBACK]: Nachricht empfangen: \n" + msg);
     Serial.println("RCVMS\n" + String(sender) + "\n" + String(size) + "\n" + msg + "\n");
     #else
     send_magicpattern();
@@ -37,6 +40,7 @@ void SerialHandler::msg_Callback(char * str, int size, int rssi, int sender){
 }
 
 void SerialHandler::success_Callback(int packref){
+    Log::Instance()->Log_msg("[SENDSUCCESS CALLBACK]: Nachrit erfolgreich gesendet ref: \n" + String(packref));
     #ifdef MOBILE
     Serial.println("SENDS\n" + String(packref) + "\n");
     #else
@@ -48,6 +52,7 @@ void SerialHandler::success_Callback(int packref){
 }
 
 void SerialHandler::error_Callback(int packref, String err){
+    Log::Instance()->Log_msg("[SEND_ERROR CALLBACK]: Nachrit ekonnte nicht zugestellt werden :/ ref: \n" + String(packref));
     #ifdef MOBILE
     Serial.println("SENDE\n" + String(packref) + "\n");
     #else
@@ -75,6 +80,7 @@ void SerialHandler::InterpretPacket(){
         display::instance()->update();
     }
     else if(incoming == "SENDM"){
+        get_byte();
         int recipient = Serial.readStringUntil('\n').toInt();
         String tmpref = Serial.readStringUntil('\n');
         incoming = Serial.readString();
