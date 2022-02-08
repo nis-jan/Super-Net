@@ -18,6 +18,9 @@ der Übertragung von Nachrichten.
  
 
 # Repo-Aufbau
+
+Die Dokumentation zu diesem Projekt wurde mit Doxygen erstellt und befindet sich in: Documentation/html/
+
 Diese Repo enthält drei Applikationen:
 
 - Die Software in C++ für die "Nodes"
