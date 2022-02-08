@@ -149,11 +149,11 @@ class _SerialState extends State<Serial> {
     
     set_addr(widget._OwnAdress);
     
-    String tempref = "55";
+    String tempref = Random().nextInt(5000).toString();
     Message outgoing = Message(msg, int.parse(tempref), false, int.parse(recipient));
     outgoing.set_status(Message_Status.ACK_PENDING);
-    pending_msgs.addAll({recipient: outgoing});
-    send_string("SENDM\n$recipient\n$tempref\n$msg");
+    pending_msgs.addAll({tempref: outgoing});
+    send_string("SENDM\n" + recipient + "\n" + tempref + "\n" + msg);
 
     return tempref;
   }
@@ -190,7 +190,7 @@ class _SerialState extends State<Serial> {
 
           if(widget.input_controller == null)tosend = "emptymsg";
           else tosend = widget.input_controller!.text;
-
+          widget.input_controller?.text = "sending msg to " + widget._recipient.toString();
           send_msg(tosend, widget._recipient);
           widget.input_controller?.clear();
         }, 

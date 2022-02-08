@@ -210,7 +210,7 @@ class _chatWindowState extends State<chatWindow> {
 
 class Konversation_Page extends StatefulWidget {
   Konversation_Page(this.konvoid, { Key? key}) : super(key: key);
-  int konvoid;
+  final int konvoid;
   @override
   _Konversation_PageState createState() => _Konversation_PageState();
 }
