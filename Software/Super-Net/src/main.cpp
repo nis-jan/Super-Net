@@ -4,7 +4,7 @@
 #include <SerialHandler.h>
 #include <Log.h>
 
-
+//lora hardwarepins:
 #define LoRa_RST 14
 #define LoRa_CS 18
 //entspricht IRQ
@@ -13,9 +13,10 @@
 bool sendmsg = false;
 
 
-
+/// <summary>
+/// Setup routine, runs once and initializes the node
+/// </summary>
 void setup() {
-  pinMode(0, INPUT);
   pinMode(25, OUTPUT);
   
   Serial.begin(9600);
@@ -33,6 +34,10 @@ void setup() {
 
 
 int packetsize;
+
+/// <summary>
+/// loop runs continuously and looks for incoming data via Usb serial or LoRa
+/// </summary>
 void loop() {
   if(Serial.available()){
     SerialHandler::InterpretPacket();
@@ -48,5 +53,6 @@ void loop() {
   catch(const char * ex){
     Log::Instance()->Log_msg("Fehler :/ Nachricht: " + String(ex));
   }
+
   delay(10);
 }
