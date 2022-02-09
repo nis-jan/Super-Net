@@ -33,7 +33,7 @@ darauf.
 
 ## Super-Net Code
 
-Der Code für die Nodes befindet sich im Ordner Software/Super-Net/src und Software/Super-Net/lib
+Der Code für die Nodes befindet sich im Ordner "Software/Super-Net/src" und "Software/Super-Net/lib"
 wobei im src-Ordner in der main.cpp nur der eigentliche Einstiegspunkt in die Software ist und
 der Hauptteil der Software sich im libordner befindet.
 Es handelt sich um ein PlatformIO-Projekt, welches konfiguriert ist für die beiden Gerätearten
@@ -43,3 +43,26 @@ Es handelt sich um ein PlatformIO-Projekt, welches konfiguriert ist für die bei
 
 in der platformio.ini, lassen sich aber weitere Gerätekonfiguration hinzufügen.
 Das Projekt lässt sich nur in mit PlatformIO, einer Erweiterung für VSCode erstellen!
+
+# Installation
+
+## Node:
+
+Das Projekt("/Software/Super-Net/") wurde mit PlatformIO(Core Version 5.2.4) in VSCode(Version 1.64.1) erstellt und sollte auch nur damit
+<br>kompiliert werden.
+Wie oben beschrieben, kommt das PlatformIO-Projekt mit zwei Gerätekonfigurationen, weitere können aber hinzugefügt werden.
+<br>Dafür muss allerdings eventuell die Pinkonfiguration für das OLED und das LoRa-Modul im Code angepasst werden.
+
+
+## App
+
+Die App wurde mit Flutter 2.5 ebenfalls in VSCode erstellt.
+<br>Im Ordner /Software/App/APK/ findet sich eine debug-apk der app, ich bin mir aber unsicher, ob sich diese
+<br>nur auf meinem Handy installieren lässt. Mit Flutter sollte sich die App aber für jedes Android-Handy erstellen lassen.
+<br>
+
+## Desktop
+
+Die Python-Desktop-Applikation wurde mit Python 3.7.9 erstellt und getestet.
+<br>Damit sie funktioniert, muss das Paket pyserial mindestens in der Version 3.5 installiert werden.
+
