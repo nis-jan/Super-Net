@@ -51,12 +51,21 @@
  *
  *
  * \section install Installation:
+ *
+ * \subsection ins3 Node:
+ *
+ * The project was created using Platformio(VSCode Extension) which is required to build it.<br>
+ * It comes with Configurations for the Devices Heltec ESP32 WiFi LoRa v2 and Heltec Wireless stick.<br>
+ * More Device-Configurations can be added in the platformio.ini file in "Software/Super-Net/",
+ * <br> but the pinconfigurations for the LoRa module and the OLED might differ.
+ *
  * \subsection ins2 Desktop:
  *
  * The desktop application depends on the python package pyserial<br>
+ * python 3.7.9 was used for testing.
  *
  * \subsection ins1 App:
  * the app is build using flutter, but a debug .apk can be found in Software/app/APK <br>
  * but I'm not sure if it can be installed on another device than mine, since it was built for debugging and I don't have another phone available to test it,<br>
- * but with flutter it can be build for any android device.
+ * but with flutter installed, it can be build for any android device.
  */
